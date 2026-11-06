@@ -62,13 +62,52 @@ To complete this, you will need to utilize these key functions from the `{ipumsr
 
 - `read_nhgis()`: Loads the downloaded data into a data frame.
 
-``` r
+define_extract_agg(
+  collection,
+  description = "",
+  datasets = NULL,
+  time_series_tables = NULL,
+  shapefiles = NULL,
+  geographic_extents = NULL,
+  breakdown_and_data_type_layout = NULL,
+  tst_layout = NULL,
+  data_format = NULL
+)
+
+nhgis_extract <- define_extract_agg(
+  "nhgis",
+  description = "Example NHGIS extract",
+  datasets = ds_spec(
+    "1990_STF3",
+    data_tables = "NP57",
+    geog_levels = c("county", "tract")
+  )
+)
+```{r}
 #| label: extract-data
 
 # 1. Define
+
+extractagg.1990 <- define_extract_agg(collection = "nhgis", 
+                   datasets = ds_spec(name = "1990_STF1", 
+                                      data_tables = "NP1", 
+                                      geog_levels = c("state")
+                                      )
+                   )
 # 2. Submit
+
+submittedextract <- submit_extract(extract = extractagg.1990)
+
 # 3. Wait & Download
+
+downloadableextract <- wait_for_extract(submittedextract)
+
+nhgis_files <- download_extract(extract = downloadableextract, download_dir = "./data")
+
 # 4. Read
+
+nhgis.data <- read_ipums_agg(data_file = "data/nhgis0002_csv.zip")
+
 ```
 
 ### Part 3: Data Cleaning
