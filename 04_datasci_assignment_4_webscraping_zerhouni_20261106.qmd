@@ -1,0 +1,149 @@
+---
+title: "Assignment 4 Web Scraping"
+format:
+  html:
+    self-contained: true
+---
+# Code Headers
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo       = TRUE, 
+                      fig.height = 3, 
+                      fig.width  = 6,
+                      fig.align  = "center")
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+```{r}
+  if (!require("pacman")) install.packages("pacman")
+
+# Load contributed packages with pacman
+pacman::p_load(rvest, tidyverse, xml2)
+```
+
+# Section 1
+### Background
+
+The U.S. Census Bureau's 1990 API endpoint is currently offline. To access 1990 Decennial data, we must pivot from `tidycensus` to the **IPUMS NHGIS** API using the `{ipumsr}` package.
+
+### Part 1: Authentication
+
+**Task:** Register at [nhgis.org](https://uma.pop.umn.edu/nhgis/user/new), generate an API key at [account.ipums.org](https://account.ipums.org), and set it in your R environment.
+
+```{r}
+library(ipumsr)
+
+usethis::edit_r_environ()
+
+# Set your API key (run this once)
+# set_ipums_api_key("PASRE_YOUR_KEY_HERE", save = TRUE)
+```
+
+### Part 2: The Data Challenge
+
+Your goal is to extract 1990 State Population Status (Table NP1) data for all States.
+
+- To figure out which tables and variables you need, you use the [NHGIS Data Finder](https://data2.nhgis.org/) on the web. The API codes (like NH4 or NP1) correspond directly to the labels and categories you select in that interface.
+
+- To find the data from the [NHGIS Data Finder](https://data2.nhgis.org/). Log into your account, then Filter Geographic level by STATE, YEARS by 1990 and TOPICS total population, the select the DATA, TABLE NAME, NP1, YEAR-DATASET, 1990_STF1
+
+#### Essential Functions Reference
+
+To complete this, you will need to utilize these key functions from the `{ipumsr}` package:
+
+- `define_extract_agg()`: Defines which dataset, table, and geography you want.
+
+- `submit_extract()`: Sends your request to the IPUMS servers.
+
+- `wait_for_extract()`: Pauses R until the IPUMS server finishes building your file.
+
+- `download_extract()`: Downloads the completed ZIP file to your computer.
+
+- `read_nhgis()`: Loads the downloaded data into a data frame.
+
+``` r
+#| label: extract-data
+
+# 1. Define
+# 2. Submit
+# 3. Wait & Download
+# 4. Read
+```
+
+### Part 3: Data Cleaning
+
+Using the metadata discovered via \``ipums_var_info()`.
+
+Rename and the select variables
+
+- gisjoin = GISJOIN,
+
+- year = YEAR,
+
+- state_abbr = STUSAB,
+
+- division = DIVISIONA,
+
+- region = REGIONA,
+
+- state_name = STATE,
+
+- state_code = STATEA,
+
+- land_area = AREALAND,
+
+- water_area = AREAWAT,
+
+- total_pop = ET1001
+
+### Part 4: Find the population density
+
+population density = total population/ land area
+
+### Part 5: Find Water Share
+
+water share = water area /(land area + water area)
+
+#### Tips for Students
+
+- **The Wait:** Remind them that `wait_for_extract()` is a "blocking" function; R will show a "busy" icon while IPUMS processes the request.
+
+- **The Metadata:** They should use the [NHGIS Data Finder](https://www.nhgis.org) to verify that Table **NP1** belongs to the **1990_STF1** (Summary Tape File 1) dataset.
+
+# Section 2
+## Problem statement:
+
+Go to the following page [List of U.S. states and territories by population](https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_population) and select the table `State and territory rankings`. Your assignment is clear, well‑structured, and absolutely appropriate for an introductory web‑scraping task in R. It checks all the essential boxes: selecting the right table, cleaning column names, fixing data types, and handling missing values. If anything, I’d say it’s a solid foundation — the kind of exercise that teaches practical, real‑world scraping skills without overwhelming you.
+
+That said, you can make it slightly more precise and a bit more “data‑science‑ready.” Here’s how I’d refine it:
+
+## 1.  Import the table into R
+
+    - Use `rvest` to scrape the table.
+
+    - Ensure you select the correct table (the page contains multiple tables).
+
+## 2.  Clean and standardize the data
+
+    - Fix column names so they are syntactically valid and descriptive (e.g., using `janitor::clean_names()`).
+
+    - Ensure the first row is treated as column headers, not data.
+
+## 3.  Correct column classes
+
+    - Convert numeric columns to numeric (they often import as character because of commas or symbols).
+
+    - Convert rank columns to integers.
+
+    - Convert state/territory names to character.
+
+## 4.  Handle missing values
+
+    - Replace any `"—"` or `"__"` or similar placeholders with `NA`.
+
+## 5.  (Optional but useful)
+
+    - Remove commas from numbers.
+
+    - Check for duplicated rows.
+
+    - Verify that the number of rows matches the number of U.S. states + territories.
