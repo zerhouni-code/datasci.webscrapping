@@ -32,10 +32,12 @@ The U.S. Census Bureau's 1990 API endpoint is currently offline. To access 1990 
 ```{r}
 library(ipumsr)
 
-usethis::edit_r_environ()
+# usethis::edit_r_environ()
 
 # Set your API key (run this once)
-# set_ipums_api_key("PASRE_YOUR_KEY_HERE", save = TRUE)
+# set_ipums_api_key("IPUMS_API_KEY", save = TRUE)
+
+ipumsapikey <- Sys.getenv("IPUMS_API_KEY")
 ```
 
 ### Part 2: The Data Challenge
