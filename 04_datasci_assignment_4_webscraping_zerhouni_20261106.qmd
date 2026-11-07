@@ -114,35 +114,78 @@ nhgis.data <- read_ipums_agg(data_file = "data/nhgis0002_csv.zip")
 
 Using the metadata discovered via \``ipums_var_info()`.
 
-Rename and the select variables
+```{r}
+ipums_var_info(object = nhgis.data,)
+```
+
+Rename and select the variables
 
 - gisjoin = GISJOIN,
-
 - year = YEAR,
-
 - state_abbr = STUSAB,
-
 - division = DIVISIONA,
-
 - region = REGIONA,
-
 - state_name = STATE,
-
 - state_code = STATEA,
-
 - land_area = AREALAND,
-
 - water_area = AREAWAT,
-
 - total_pop = ET1001
+
+```{r}
+stage1 <- str_remove_all(
+"gisjoin = GISJOIN,
+- year = YEAR,
+- state_abbr = STUSAB,
+- division = DIVISIONA,
+- region = REGIONA,
+- state_name = STATE,
+- state_code = STATEA,
+- land_area = AREALAND,
+- water_area = AREAWAT,
+- total_pop = ET1001"," - ")
+
+stage2 <- str_remove_all(stage1, "\n-")
+
+
+nhgis.data %>% 
+  rename(gisjoin = GISJOIN, year = YEAR, state_abbr = STUSAB, 
+         division = DIVISIONA, region = REGIONA, state_name = STATE,
+         state_code = STATEA, land_area = AREALAND, water_area = AREAWAT,
+         total_pop = ET1001) %>% 
+  select(gisjoin, year, state_abbr, 
+         division, region, state_name, 
+         state_code, land_area, water_area, 
+         total_pop) -> nhgis.data
+```
+
 
 ### Part 4: Find the population density
 
 population density = total population/ land area
 
+```{r}
+glimpse(nhgis.data)
+```
+
+
+```{r}
+nhgis.data %>% mutate(num_land_area = as.numeric(land_area), popdensity = total_pop/num_land_area) -> nhgis.data
+
+nhgis.data$popdensity %>% head()
+```
+
 ### Part 5: Find Water Share
 
 water share = water area /(land area + water area)
+
+```{r}
+nhgis.data %>% mutate(num_water_area = as.numeric(water_area), water_share = num_water_area / (num_water_area + num_land_area) ) -> nhgis.data
+```
+
+```{r}
+nhgis.data$water_share %>% head()
+```
+
 
 #### Tips for Students
 
