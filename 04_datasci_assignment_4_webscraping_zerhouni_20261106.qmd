@@ -3,6 +3,9 @@ title: "Assignment 4 Web Scraping"
 format:
   html:
     self-contained: true
+author: "Zak Zerhouni"
+date: today
+date-format: long
 ---
 # Code Headers
 ```{r setup, include=FALSE}
@@ -83,9 +86,9 @@ nhgis_extract <- define_extract_agg(
     geog_levels = c("county", "tract")
   )
 )
-```{r}
+```{r, include=FALSE}
 #| label: extract-data
-
+#| eval: FALSE
 # 1. Define
 
 extractagg.1990 <- define_extract_agg(collection = "nhgis", 
@@ -103,12 +106,13 @@ submittedextract <- submit_extract(extract = extractagg.1990)
 downloadableextract <- wait_for_extract(submittedextract)
 
 nhgis_files <- download_extract(extract = downloadableextract, download_dir = "./data")
-
-# 4. Read
-
-nhgis.data <- read_ipums_agg(data_file = "data/nhgis0002_csv.zip")
-
 ```
+
+```{r}
+# 4. Read
+nhgis.data <- read_ipums_agg(data_file = "data/nhgis0002_csv.zip")
+```
+
 
 ### Part 3: Data Cleaning
 
@@ -244,10 +248,6 @@ names(statetable) <- names(janitor::clean_names(statetable))
     - Convert rank columns to integers.
 
     - Convert state/territory names to character.
-
-```{r}
-View(statetable)
-```
 
 ```{r}
 colnames(statetable)
