@@ -205,12 +205,37 @@ That said, you can make it slightly more precise and a bit more “data‑scienc
     - Use `rvest` to scrape the table.
 
     - Ensure you select the correct table (the page contains multiple tables).
+    
+```{r}
+url <- "https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_population"
+
+html <- rvest::read_html(url)
+
+html %>% 
+  html_elements("table") %>% html_elements("#mwzq")
+
+html %>% html_elements("#mwZQ") |> html_table() -> statelist
+
+statetable <- statelist[[1]]
+```
+
 
 ## 2.  Clean and standardize the data
 
     - Fix column names so they are syntactically valid and descriptive (e.g., using `janitor::clean_names()`).
 
     - Ensure the first row is treated as column headers, not data.
+
+```{r}
+first_row <- as.character(unlist(statetable[1, ], use.names = FALSE))
+
+names(statetable) <- make.unique(trimws(paste(names(statetable[1, ]), first_row, sep = "_")))
+
+statetable <- statetable[-1, -1]
+
+names(statetable) <- names(janitor::clean_names(statetable))
+```
+
 
 ## 3.  Correct column classes
 
@@ -220,14 +245,55 @@ That said, you can make it slightly more precise and a bit more “data‑scienc
 
     - Convert state/territory names to character.
 
+```{r}
+View(statetable)
+```
+
+```{r}
+colnames(statetable)
+```
+
+```{r}
+statetable
+
+statetable.backup <- statetable
+```
+
+```{r}
+statetable[colnames(statetable)[-1]] <- lapply(statetable[colnames(statetable)[-1]], function(x) {
+  as.numeric(gsub("[^0-9.-]", "", as.character(x)))
+})
+```
+
+```{r}
+glimpse(statetable)
+```
+
 ## 4.  Handle missing values
 
     - Replace any `"—"` or `"__"` or similar placeholders with `NA`.
+    
+This was handled in Part 3 when replacing commas and any characters that weren't 0-9, a period, or a minus sign. Missing values were coerced into NAs.
 
 ## 5.  (Optional but useful)
 
     - Remove commas from numbers.
 
+Handled in Part 3
+
     - Check for duplicated rows.
+    
+```{r}
+# This output checks for any duplicates in the state or territory names.
+# On visual inspection there also don't appear to be any duplicates,
+# but that is only possible because the number of rows is not very large in 
+# this data set.
+sum(duplicated(statetable$state_or_territory_state_or_territory))
+```
+
 
     - Verify that the number of rows matches the number of U.S. states + territories.
+    
+There are four rows in addition to these as part of the table. The contiguous U.S., The 50 States, The 50 States + D.C., and Total U.S. and territories.
+
+These are intended to be part of the table, and would only be removed if we wanted mutually exclusive counts for our statistical or data science work.
